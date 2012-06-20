@@ -5,14 +5,8 @@ from twisted.internet import reactor
 from twisted.python import log
 import sys,os
 import json
-import logging
 
-observer = log.PythonLoggingObserver()
-observer.start()
-
-core_log = logging.getLogger('twsrv')
-sh = log.handlers.StreamHandler()
-core_log.addHandler(sh)
+log.startLogging(sys.stdout)
 
 root = vhost.NameVirtualHost()
 
@@ -20,14 +14,29 @@ hosts = {
     'blog.deacondesperado.com':('../deacondesperado','server','app')
 }
 
-for host in hosts:
-    server_name = host
-    path,module,app = hosts[host]
-    sys.path.append(path)
-    exec("from %s import %s" % (module,app))
-    log.msg('Setting up host %s', server_name)
-    root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
+def setup(configuration):
+    for host in configuration:
+        server_name = host
+        path,module,app = (configuration[host]['path'],configuration[host]['module'],configuration[host]['app'])
+        sys.path.append(path)
+        exec("from %s import %s" % (module,app))
+        log.msg('Setting up host %s' % server_name)
+        root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
 
-reactor.listenTCP(80,Site(root))
-reactor.run()
+    reactor.listenTCP(80,Site(root))
+    reactor.run()
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_json')
+
+    args = parser.parse_args()
+    try:
+        json_file = open(args.config_json)
+        config = json.loads(json_file.read())
+        setup(config)
+    except IOError:
+        print 'Could not find config file %s' % args.config_json
+
 

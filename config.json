@@ -1,0 +1,7 @@
+{
+    "blog.deacondesperado.com":{
+        "path":"../deacondesperado",
+        "module":"server",
+        "app":"app"
+    }
+}
