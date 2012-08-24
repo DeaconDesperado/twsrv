@@ -18,6 +18,7 @@ def setup(configuration):
     for host in configuration:
         server_name = host
         path,module,app = (configuration[host]['path'],configuration[host]['module'],configuration[host]['app'])
+	sys.path.append('/srv')
         sys.path.append(path)
         exec("from %s import %s" % (module,app))
         log.msg('Setting up host %s' % server_name)

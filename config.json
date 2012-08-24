@@ -3,5 +3,11 @@
         "path":"../deacondesperado",
         "module":"server",
         "app":"app"
+    },
+    "snips.deacondesperado.com":{
+        "path":"../snips",
+        "module":"app",
+        "app":"app"
     }
+
 }
