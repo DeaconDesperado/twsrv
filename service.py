@@ -10,10 +10,6 @@ log.startLogging(sys.stdout)
 
 root = vhost.NameVirtualHost()
 
-hosts = {
-    'blog.deacondesperado.com':('../deacondesperado','server','app')
-}
-
 def setup(configuration):
     for host in configuration:
         server_name = host
