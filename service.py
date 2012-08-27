@@ -9,16 +9,29 @@ import json
 log.startLogging(sys.stdout)
 
 root = vhost.NameVirtualHost()
+ssl_root = vhost.NameVirtualHost()
 
 def setup(configuration):
     for host in configuration:
         server_name = host
         path,module,app = (configuration[host]['path'],configuration[host]['module'],configuration[host]['app'])
-	sys.path.append('/srv')
+        try:
+            aliases = configuration[host]['aliases']
+        except KeyError:
+            aliases = []
+
+        ssl = bool(configuration[host].get('secure',False))
+        sys.path.append('/srv')
         sys.path.append(path)
         exec("from %s import %s" % (module,app))
         log.msg('Setting up host %s' % server_name)
         root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
+        if ssl:
+            ssl_root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
+        for alias in aliases:
+            aliased = '%s.%s' % (alias,server_name)
+            log.msg('Setting up alias %s' % aliased)
+            root.addHost(aliased,WSGIResource(reactor,reactor.getThreadPool(),app))
 
     reactor.listenTCP(80,Site(root))
     reactor.run()

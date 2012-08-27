@@ -1,13 +1,8 @@
 {
-    "blog.deacondesperado.com":{
-        "path":"../deacondesperado",
-        "module":"server",
-        "app":"app"
-    },
-    "snips.deacondesperado.com":{
-        "path":"../snips",
-        "module":"app",
-        "app":"app"
+    "myopia.local":{
+        "path":"../myopia_placehold",
+        "module":"listener",
+        "app":"app",
+				"aliases":["www"]
     }
-
 }
