@@ -3,15 +3,49 @@ from twisted.web.wsgi import WSGIResource
 from twisted.web import static,server,vhost,script
 from twisted.internet import reactor
 from twisted.python import log
+from twisted.internet.ssl import ContextFactory
 import sys,os
 import json
+from OpenSSL.SSL import Context,TLSv1_METHOD
+import OpenSSL
+print OpenSSL.__version__
 
 log.startLogging(sys.stdout)
 
 root = vhost.NameVirtualHost()
-ssl_root = vhost.NameVirtualHost()
+
+class SSLFactory(ContextFactory):
+    
+    def setCerts(self,config):
+        self.certificates = {}
+        for host in config:
+            try:
+                self.certificates[host] = config[host]['ssl']
+            except KeyError:
+                pass
+
+        print self.certificates
+
+    def getContext(self):
+        def pickCert(connection):
+            try:
+                key,cert = certificates[connection.get_servername()]
+                key = open(key)
+                cert = open(cert)
+            except KeyError:
+                pass
+            else:
+                new_context = Context(TLSv1_METHOD)
+                new_context.use_privatekey_file(key)
+                new_context.use_certificate_file(cert)
+                connection.set_context(new_context)
+
+        server_context = Context(TLSv1_METHOD)
+        server_context.set_tlsext_servername_callback(pickCert)
 
 def setup(configuration):
+    ssl_creator = SSLFactory()
+    ssl_creator.setCerts(configuration)
     for host in configuration:
         server_name = host
         path,module,app = (configuration[host]['path'],configuration[host]['module'],configuration[host]['app'])
@@ -34,6 +68,7 @@ def setup(configuration):
             root.addHost(aliased,WSGIResource(reactor,reactor.getThreadPool(),app))
 
     reactor.listenTCP(80,Site(root))
+    reactor.listenSSL(443,Site(root),ssl_creator)
     reactor.run()
 
 if __name__ == '__main__':
@@ -48,5 +83,3 @@ if __name__ == '__main__':
         setup(config)
     except IOError:
         print 'Could not find config file %s' % args.config_json
-
-

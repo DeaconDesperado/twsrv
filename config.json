@@ -3,6 +3,7 @@
         "path":"../myopia_placehold",
         "module":"listener",
         "app":"app",
-				"aliases":["www"]
+				"aliases":["www"],
+				"ssl":["../myopia_placehold/server.key","../myopia_placehold/server.crt"]
     }
 }
