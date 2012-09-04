@@ -8,11 +8,25 @@ import sys,os
 import json
 from OpenSSL.SSL import Context,TLSv1_METHOD
 import OpenSSL
-print OpenSSL.__version__
 
 log.startLogging(sys.stdout)
 
 root = vhost.NameVirtualHost()
+
+def pickCert(connection):
+    print 'picking a cert'
+    try:
+        key,cert = certificates[connection.get_servername()]
+        key = open(key)
+        cert = open(cert)
+    except KeyError:
+        pass
+    else:
+        new_context = Context(TLSv1_METHOD)
+        new_context.use_privatekey_file(key)
+        new_context.use_certificate_file(cert)
+        connection.set_context(new_context)
+        return new_context
 
 class SSLFactory(ContextFactory):
     
@@ -27,21 +41,9 @@ class SSLFactory(ContextFactory):
         print self.certificates
 
     def getContext(self):
-        def pickCert(connection):
-            try:
-                key,cert = certificates[connection.get_servername()]
-                key = open(key)
-                cert = open(cert)
-            except KeyError:
-                pass
-            else:
-                new_context = Context(TLSv1_METHOD)
-                new_context.use_privatekey_file(key)
-                new_context.use_certificate_file(cert)
-                connection.set_context(new_context)
-
         server_context = Context(TLSv1_METHOD)
         server_context.set_tlsext_servername_callback(pickCert)
+        return server_context
 
 def setup(configuration):
     ssl_creator = SSLFactory()
