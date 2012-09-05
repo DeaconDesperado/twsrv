@@ -10,26 +10,27 @@ from OpenSSL.SSL import Context,TLSv1_METHOD
 import OpenSSL
 
 log.startLogging(sys.stdout)
-
 root = vhost.NameVirtualHost()
-
-def pickCert(connection):
-    print 'picking a cert'
-    try:
-        key,cert = certificates[connection.get_servername()]
-        key = open(key)
-        cert = open(cert)
-    except KeyError:
-        pass
-    else:
-        new_context = Context(TLSv1_METHOD)
-        new_context.use_privatekey_file(key)
-        new_context.use_certificate_file(cert)
-        connection.set_context(new_context)
-        return new_context
 
 class SSLFactory(ContextFactory):
     
+    def __call__(self,connection):
+        print 'picking a cert'
+        try:
+            key,cert = self.certificates[connection.get_servername()]
+            key = open(key)
+            cert = open(cert)
+        except KeyError:
+            pass
+        except Exception as e:
+            print e
+        else:
+            new_context = Context(TLSv1_METHOD)
+            new_context.use_privatekey_file(key)
+            new_context.use_certificate_file(cert)
+            connection.set_context(new_context)
+            return connection
+
     def setCerts(self,config):
         self.certificates = {}
         for host in config:
@@ -38,11 +39,9 @@ class SSLFactory(ContextFactory):
             except KeyError:
                 pass
 
-        print self.certificates
-
     def getContext(self):
         server_context = Context(TLSv1_METHOD)
-        server_context.set_tlsext_servername_callback(pickCert)
+        server_context.set_tlsext_servername_callback(self)
         return server_context
 
 def setup(configuration):
