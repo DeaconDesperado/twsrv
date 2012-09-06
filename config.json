@@ -4,6 +4,6 @@
         "module":"listener",
         "app":"app",
 				"aliases":["www"],
-				"ssl":["../myopia_placehold/server.key","../myopia_placehold/server.crt"]
+				"ssl":["/home/mark/projects/myopia_placehold/server.key","/home/mark/projects/myopia_placehold/server.crt"]
     }
 }

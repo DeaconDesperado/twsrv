@@ -17,19 +17,17 @@ class SSLFactory(ContextFactory):
     def __call__(self,connection):
         print 'picking a cert'
         try:
+            print 'Servername: %s' % connection.get_servername()
             key,cert = self.certificates[connection.get_servername()]
-            key = open(key)
-            cert = open(cert)
-        except KeyError:
-            pass
+        except KeyError as e:
+            print e
         except Exception as e:
             print e
-        else:
-            new_context = Context(TLSv1_METHOD)
-            new_context.use_privatekey_file(key)
-            new_context.use_certificate_file(cert)
-            connection.set_context(new_context)
-            return connection
+        new_context = Context(TLSv1_METHOD)
+        new_context.use_privatekey_file(key)
+        new_context.use_certificate_file(cert)
+        connection.set_context(new_context)
+        print 'returning context'
 
     def setCerts(self,config):
         self.certificates = {}
@@ -40,7 +38,10 @@ class SSLFactory(ContextFactory):
                 pass
 
     def getContext(self):
+        print 'getting context'
         server_context = Context(TLSv1_METHOD)
+        #server_context.use_privatekey_file('/home/mark/projects/myopia_placehold/server.key')
+        #server_context.use_certificate_file('/home/mark/projects/myopia_placehold/server.crt')
         server_context.set_tlsext_servername_callback(self)
         return server_context
 
