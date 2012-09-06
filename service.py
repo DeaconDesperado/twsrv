@@ -15,7 +15,6 @@ root = vhost.NameVirtualHost()
 class SSLFactory(ContextFactory):
     
     def __call__(self,connection):
-        print 'picking a cert'
         try:
             print 'Servername: %s' % connection.get_servername()
             key,cert = self.certificates[connection.get_servername()]
