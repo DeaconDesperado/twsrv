@@ -1,6 +1,7 @@
 {
     "myopia.local":{
-        "path":"../myopia_placehold",
+        "path":"/home/mark/projects",
+				"package":"myopia_placehold",
         "module":"listener",
         "app":"app",
 				"aliases":["www"],

@@ -8,6 +8,9 @@ import sys,os
 import json
 from OpenSSL.SSL import Context,TLSv1_METHOD
 import OpenSSL
+from wsgi_dispatcher import SubdomainDispatcher
+from copy import deepcopy
+import re
 
 log.startLogging(sys.stdout)
 root = vhost.NameVirtualHost()
@@ -16,8 +19,9 @@ class SSLFactory(ContextFactory):
     
     def __call__(self,connection):
         try:
-            print 'Servername: %s' % connection.get_servername()
-            key,cert = self.certificates[connection.get_servername()]
+            servername = re.sub('^[^.]*\.(?=\w+\.\w+$)','',connection.get_servername())
+            print 'Servername: %s' % servername 
+            key,cert = self.certificates[servername]
         except KeyError as e:
             print e
         except Exception as e:
@@ -49,25 +53,33 @@ def setup(configuration):
     ssl_creator.setCerts(configuration)
     for host in configuration:
         server_name = host
-        path,module,app = (configuration[host]['path'],configuration[host]['module'],configuration[host]['app'])
+        path,package,module,app = (configuration[host]['path'],configuration[host]['package'],configuration[host]['module'],configuration[host]['app'])
         try:
             aliases = configuration[host]['aliases']
         except KeyError:
-            aliases = []
+            aliases = False
 
         ssl = bool(configuration[host].get('secure',False))
         sys.path.append('/srv')
-        sys.path.append(path)
-        exec("from %s import %s" % (module,app))
+        sys.path.append(str(path))
+        log.msg(sys.path)
+        exec("import %s.%s" % (package,module))
+        app = getattr(getattr(locals()[package],module),app)
         log.msg('Setting up host %s' % server_name)
-        root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
+        if aliases:
+            #host is aliased
+            for alias in aliases:
+                aliased = '%s.%s' % (alias,server_name)
+                log.msg('Setting up alias %s' % aliased)
+                root.addHost(aliased,WSGIResource(reactor,reactor.getThreadPool(),app))
+            if ssl:
+                ssl_root.addHost(aliased,WSGIResource(reactor,reactor.getThreadPool(),app))
+
         if ssl:
             ssl_root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
-        for alias in aliases:
-            aliased = '%s.%s' % (alias,server_name)
-            log.msg('Setting up alias %s' % aliased)
-            root.addHost(aliased,WSGIResource(reactor,reactor.getThreadPool(),app))
-
+        
+        root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
+        
     reactor.listenTCP(80,Site(root))
     reactor.listenSSL(443,Site(root),ssl_creator)
     reactor.run()
