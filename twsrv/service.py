@@ -1,6 +1,7 @@
 from twisted.web.server import Site
 from twisted.web.wsgi import WSGIResource
 from twisted.web import static,server,vhost,script
+from twisted.web.util import Redirect,redirectTo
 from twisted.internet import reactor
 from twisted.python import log
 from twisted.internet.ssl import ContextFactory
@@ -11,6 +12,7 @@ import OpenSSL
 from wsgi_dispatcher import SubdomainDispatcher
 from copy import deepcopy
 import re
+import threading
 
 log.startLogging(sys.stdout)
 root = vhost.NameVirtualHost()
@@ -20,7 +22,6 @@ class SSLFactory(ContextFactory):
     def __call__(self,connection):
         try:
             servername = re.sub('^[^.]*\.(?=\w+\.\w+$)','',connection.get_servername())
-            print 'Servername: %s' % servername 
             key,cert = self.certificates[servername]
         except KeyError as e:
             print e
@@ -30,58 +31,64 @@ class SSLFactory(ContextFactory):
         new_context.use_privatekey_file(key)
         new_context.use_certificate_file(cert)
         connection.set_context(new_context)
-        print 'returning context'
 
     def setCerts(self,config):
         self.certificates = {}
-        for host in config:
+        for host in config['hosts']:
             try:
-                self.certificates[host] = config[host]['ssl']
+                self.certificates[host] = config['hosts'][host]['ssl']
             except KeyError:
                 pass
 
     def getContext(self):
-        print 'getting context'
         server_context = Context(TLSv1_METHOD)
-        #server_context.use_privatekey_file('/home/mark/projects/myopia_placehold/server.key')
-        #server_context.use_certificate_file('/home/mark/projects/myopia_placehold/server.crt')
         server_context.set_tlsext_servername_callback(self)
         return server_context
+
+class DomainRedirector(Redirect):
+
+    def render(self,request):
+        print 'PATH! %s%s' % (self.url,request.path)
+        print dir(request)
+        host_port = request.getHost().port
+        if host_port == 80:
+            host_port = ''
+        else:
+            host_port = ':%s' % host_port
+        return redirectTo('%s%s%s' % (self.url,host_port,request.path),request)
 
 def setup(configuration):
     ssl_creator = SSLFactory()
     ssl_creator.setCerts(configuration)
-    for host in configuration:
+    host_def = configuration.get('hosts',{})
+    for host in host_def:
         server_name = host
-        path,package,module,app = (configuration[host]['path'],configuration[host]['package'],configuration[host]['module'],configuration[host]['app'])
+        path,package,module,app = (host_def[host]['path'],host_def[host]['package'],host_def[host]['module'],host_def[host]['app'])
         try:
-            aliases = configuration[host]['aliases']
+            aliases = host_def[host]['aliases']
         except KeyError:
             aliases = False
 
-        ssl = bool(configuration[host].get('secure',False))
+        ssl = bool(host_def[host].get('secure',False))
         sys.path.append('/srv')
         sys.path.append(str(path))
-        log.msg(sys.path)
         exec("import %s.%s" % (package,module))
         app = getattr(getattr(locals()[package],module),app)
         log.msg('Setting up host %s' % server_name)
         if aliases:
-            #host is aliased
             for alias in aliases:
                 aliased = '%s.%s' % (alias,server_name)
                 log.msg('Setting up alias %s' % aliased)
-                root.addHost(aliased,WSGIResource(reactor,reactor.getThreadPool(),app))
+                root.addHost(aliased,Site(DomainRedirector(str('http://%s' % server_name))))
             if ssl:
-                ssl_root.addHost(aliased,WSGIResource(reactor,reactor.getThreadPool(),app))
-
+                root.addHost(aliased,Site(DomainRedirector(str('https://%s' % server_name))))
         if ssl:
             ssl_root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
         
         root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
         
-    reactor.listenTCP(80,Site(root))
-    reactor.listenSSL(443,Site(root),ssl_creator)
+    reactor.listenTCP(configuration.get('http_port',80),Site(root))
+    reactor.listenSSL(configuration.get('ssl_port',443),Site(root),ssl_creator)
     reactor.run()
 
 if __name__ == '__main__':
