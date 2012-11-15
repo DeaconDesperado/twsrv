@@ -13,6 +13,7 @@ import OpenSSL
 from copy import deepcopy
 import re
 import threading
+from shared_root import SharedRootWSGI
 
 root = vhost.NameVirtualHost()
 
@@ -73,7 +74,9 @@ def setup(configuration):
         app = getattr(getattr(locals()[package],module),app)
         log.msg('Setting up host %s' % server_name)
     
-        host_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
+        wsgi_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
+        host_resource = SharedRootWSGI()
+        host_resource.setApp(wsgi_resource)
         host_resource.putChild('static',File('/home/mark/projects/myopia_placehold/static'))
 
         if aliases:

@@ -9,3 +9,4 @@ class SharedRootWSGI(Resource):
     def getChild(self,child,request):
         request.prepath.pop()
         request.postpath.insert(0,child)
+        return self.WSGI
