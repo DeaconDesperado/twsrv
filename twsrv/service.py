@@ -78,9 +78,8 @@ def setup(configuration):
                 log.msg('Setting up alias %s' % aliased)
                 root.addHost(aliased,Site(DomainRedirector(str('http://%s' % server_name))))
             if ssl:
+                log.msg('Setting up https alias for %s' % aliased)
                 root.addHost(aliased,Site(DomainRedirector(str('https://%s' % server_name))))
-        if ssl:
-            ssl_root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
         
         root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
         

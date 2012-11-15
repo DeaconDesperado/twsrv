@@ -8,6 +8,7 @@
 					"module":"listener",
 					"app":"app",
 					"aliases":["www"],
+					"secure":true,
 					"ssl":["/home/mark/projects/myopia_placehold/server.key","/home/mark/projects/myopia_placehold/server.crt"]
 			},
 			"patrick.local":{
