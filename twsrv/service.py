@@ -1,4 +1,5 @@
 from twisted.web.server import Site
+from twisted.web.static import File
 from twisted.web.wsgi import WSGIResource
 from twisted.web import static,server,vhost,script
 from twisted.web.util import Redirect,redirectTo
@@ -71,6 +72,10 @@ def setup(configuration):
         exec("import %s.%s" % (package,module))
         app = getattr(getattr(locals()[package],module),app)
         log.msg('Setting up host %s' % server_name)
+    
+        host_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
+        host_resource.putChild('static',File('/home/mark/projects/myopia_placehold/static'))
+
         if aliases:
             #redirect any aliased hosts to the intended
             for alias in aliases:
@@ -81,10 +86,18 @@ def setup(configuration):
                 log.msg('Setting up https alias for %s' % aliased)
                 root.addHost(aliased,Site(DomainRedirector(str('https://%s' % server_name))))
         
-        root.addHost(server_name,WSGIResource(reactor,reactor.getThreadPool(),app))
-        
-    reactor.listenTCP(configuration.get('http_port',80),Site(root))
-    reactor.listenSSL(configuration.get('ssl_port',443),Site(root),ssl_creator)
+        root.addHost(server_name,host_resource)
+   
+    log.msg('setting up static fileserving')
+    static_stuff = File('/home/mark/Downloads')
+
+    #root.putChild('static',File('/home/mark/projects/myopia_placehold/static'))
+
+    #http_site = Site(static_stuff)
+    http_site = Site(root)
+
+    reactor.listenTCP(configuration.get('http_port',80),http_site)
+    reactor.listenSSL(configuration.get('ssl_port',443),http_site,ssl_creator)
     reactor.run()
 
 if __name__ == '__main__':

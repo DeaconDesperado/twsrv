@@ -16,7 +16,10 @@
 					"package":"patrick",
 					"module":"listener",
 					"app":"app",
-					"aliases":["www"]
+					"aliases":["www"],
+					"static_paths":[
+						"/home/mark/Pictures"
+					]
 			}
 		}
 }
