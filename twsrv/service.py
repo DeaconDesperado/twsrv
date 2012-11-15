@@ -9,12 +9,10 @@ import sys,os
 import json
 from OpenSSL.SSL import Context,TLSv1_METHOD
 import OpenSSL
-from wsgi_dispatcher import SubdomainDispatcher
 from copy import deepcopy
 import re
 import threading
 
-log.startLogging(sys.stdout)
 root = vhost.NameVirtualHost()
 
 class SSLFactory(ContextFactory):
@@ -99,6 +97,7 @@ if __name__ == '__main__':
     try:
         json_file = open(args.config_json)
         config = json.loads(json_file.read())
+        log.startLogging(sys.stdout)
         setup(config)
     except IOError:
         print 'Could not find config file %s' % args.config_json
