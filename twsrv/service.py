@@ -48,8 +48,6 @@ class SSLFactory(ContextFactory):
 class DomainRedirector(Redirect):
 
     def render(self,request):
-        print 'PATH! %s%s' % (self.url,request.path)
-        print dir(request)
         host_port = request.getHost().port
         if host_port == 80:
             host_port = ''
@@ -76,6 +74,7 @@ def setup(configuration):
         app = getattr(getattr(locals()[package],module),app)
         log.msg('Setting up host %s' % server_name)
         if aliases:
+            #redirect any aliased hosts to the intended
             for alias in aliases:
                 aliased = '%s.%s' % (alias,server_name)
                 log.msg('Setting up alias %s' % aliased)

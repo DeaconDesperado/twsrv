@@ -1,0 +1,21 @@
+{
+	"http_port":80,
+	"ssl_port":443,
+		"hosts":{
+			"myopia.local":{
+					"path":"/home/mark/projects",
+					"package":"myopia_placehold",
+					"module":"listener",
+					"app":"app",
+					"aliases":["www"],
+					"ssl":["/home/mark/projects/myopia_placehold/server.key","/home/mark/projects/myopia_placehold/server.crt"]
+			},
+			"patrick.local":{
+					"path":"/home/mark/projects",
+					"package":"patrick",
+					"module":"listener",
+					"app":"app",
+					"aliases":["www"]
+			}
+		}
+}

@@ -1,2 +1,3 @@
 *.pyc
-config.json
+env
+_trial_temp
