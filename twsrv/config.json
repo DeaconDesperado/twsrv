@@ -18,7 +18,7 @@
 					"app":"app",
 					"aliases":["www"],
 					"static_paths":{
-						"bah":"/home/mark/Pictures"
+						"bah":"/home/mark/projects/patrick/public"
 					}
 			}
 		}
