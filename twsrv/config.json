@@ -17,9 +17,9 @@
 					"module":"listener",
 					"app":"app",
 					"aliases":["www"],
-					"static_paths":[
-						"/home/mark/Pictures"
-					]
+					"static_paths":{
+						"bah":"/home/mark/Pictures"
+					}
 			}
 		}
 }

@@ -10,3 +10,6 @@ class SharedRootWSGI(Resource):
         request.prepath.pop()
         request.postpath.insert(0,child)
         return self.WSGI
+
+    def render(self,request):
+        return self.WSGI.render(request)

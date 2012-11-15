@@ -77,7 +77,9 @@ def setup(configuration):
         wsgi_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
         host_resource = SharedRootWSGI()
         host_resource.setApp(wsgi_resource)
-        host_resource.putChild('static',File('/home/mark/projects/myopia_placehold/static'))
+        static_paths = host_def[host].get('static_paths',{})
+        for s_route,s_path in static_paths.items():
+            host_resource.putChild(s_route.strip('/'),File(str(s_path)))
 
         if aliases:
             #redirect any aliased hosts to the intended
@@ -92,7 +94,6 @@ def setup(configuration):
         root.addHost(server_name,host_resource)
    
     log.msg('setting up static fileserving')
-    static_stuff = File('/home/mark/Downloads')
 
     #root.putChild('static',File('/home/mark/projects/myopia_placehold/static'))
 
