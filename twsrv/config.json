@@ -24,8 +24,8 @@
 					}
 			},
 			"pxquilt.local":{
-				"type":"dir",
-				"path":"/home/mark/Downloads",
+				"type":"php",
+				"path":"/home/mark/projects/test_php",
 				"aliases":["www"]
 			}
 		}

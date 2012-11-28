@@ -14,6 +14,7 @@ from copy import deepcopy
 import re
 import threading
 from shared_root import SharedRootWSGI
+from wphp import PHPApp
 
 root = vhost.NameVirtualHost()
 
@@ -78,12 +79,17 @@ def setup(configuration):
             wsgi_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
             host_resource = SharedRootWSGI()
             host_resource.setApp(wsgi_resource)
-            static_paths = host_def[host].get('static_paths',{})
-            for s_route,s_path in static_paths.items():
-                host_resource.putChild(s_route.strip('/'),File(str(s_path)))
-        else:
+        elif host_def[host].get('type','wsgi') == 'dir':
             log.msg('path: %s' % path)
             host_resource = File(str(path))
+        elif host_def[host].get('type','wsgi')=='php':
+            log.msg('path: %s' % path)
+            app = PHPApp(str(path),php_options=host_def[host].get('opts',{}))
+            host_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
+
+        static_paths = host_def[host].get('static_paths',{})
+        for s_route,s_path in static_paths.items():
+            host_resource.putChild(s_route.strip('/'),File(str(s_path)))
 
         if aliases:
             #redirect any aliased hosts to the intended

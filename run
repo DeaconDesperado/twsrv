@@ -1,2 +1,1 @@
-source ./env/bin/activate
 python ./twsrv/service.py ./twsrv/config.json
