@@ -3,6 +3,7 @@
 	"ssl_port":5000,
 		"hosts":{
 			"myopia.local":{
+					"type":"wsgi",
 					"path":"/home/mark/projects",
 					"package":"myopia_placehold",
 					"module":"listener",
@@ -12,6 +13,7 @@
 					"ssl":["/home/mark/projects/myopia_placehold/server.key","/home/mark/projects/myopia_placehold/server.crt"]
 			},
 			"patrick.local":{
+					"type":"wsgi",
 					"path":"/home/mark/projects",
 					"package":"patrick",
 					"module":"listener",
@@ -20,6 +22,11 @@
 					"static_paths":{
 						"bah":"/home/mark/projects/patrick/public"
 					}
+			},
+			"pxquilt.local":{
+				"type":"dir",
+				"path":"/home/mark/Downloads",
+				"aliases":["www"]
 			}
 		}
 }

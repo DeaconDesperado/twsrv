@@ -61,7 +61,7 @@ def setup(configuration):
     host_def = configuration.get('hosts',{})
     for host in host_def:
         server_name = host
-        path,package,module,app = (host_def[host]['path'],host_def[host]['package'],host_def[host]['module'],host_def[host]['app'])
+        path,package,module,app = (host_def[host].get('path',None),host_def[host].get('package'),host_def[host].get('module'),host_def[host].get('app'))
         try:
             aliases = host_def[host]['aliases']
         except KeyError:
@@ -69,17 +69,21 @@ def setup(configuration):
 
         ssl = bool(host_def[host].get('secure',False))
         sys.path.append('/srv')
-        sys.path.append(str(path))
-        exec("import %s.%s" % (package,module))
-        app = getattr(getattr(locals()[package],module),app)
+
         log.msg('Setting up host %s' % server_name)
-    
-        wsgi_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
-        host_resource = SharedRootWSGI()
-        host_resource.setApp(wsgi_resource)
-        static_paths = host_def[host].get('static_paths',{})
-        for s_route,s_path in static_paths.items():
-            host_resource.putChild(s_route.strip('/'),File(str(s_path)))
+        if host_def[host].get('type','wsgi') == 'wsgi':
+            sys.path.append(str(path))
+            exec("import %s.%s" % (package,module))
+            app = getattr(getattr(locals()[package],module),app)
+            wsgi_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
+            host_resource = SharedRootWSGI()
+            host_resource.setApp(wsgi_resource)
+            static_paths = host_def[host].get('static_paths',{})
+            for s_route,s_path in static_paths.items():
+                host_resource.putChild(s_route.strip('/'),File(str(s_path)))
+        else:
+            log.msg('path: %s' % path)
+            host_resource = File(str(path))
 
         if aliases:
             #redirect any aliased hosts to the intended
@@ -95,9 +99,6 @@ def setup(configuration):
    
     log.msg('setting up static fileserving')
 
-    #root.putChild('static',File('/home/mark/projects/myopia_placehold/static'))
-
-    #http_site = Site(static_stuff)
     http_site = Site(root)
 
     reactor.listenTCP(configuration.get('http_port',80),http_site)
