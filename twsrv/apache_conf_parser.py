@@ -500,7 +500,8 @@ class htaccessFile(ApacheConfParser):
 
     def shouldRewrite(self,path):
         if self.RewriteEngine()[0]:
-            pass
+            for node in self.nodes:
+                pass
         return False
 
 if __name__ == '__main__':
