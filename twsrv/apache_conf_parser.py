@@ -482,5 +482,48 @@ class ApacheConfParser(ComplexNode):
                 self.count += 1
             self.add_line(line)
         self.complete = True
-                
+               
 
+class htaccessFile(ApacheConfParser):
+
+    def RewriteEngine(self):
+        engine,base = None,None
+        for node in self.nodes:
+            try:
+                if node.name == 'RewriteEngine' and 'On' in node.arguments:
+                    engine = True
+                if node.name == 'RewriteBase':
+                    base = node.arguments[0]
+            except AttributeError:
+                continue
+        return engine,base
+
+    def shouldRewrite(self,path):
+        if self.RewriteEngine()[0]:
+            pass
+        return False
+
+if __name__ == '__main__':
+    from cmd import Cmd
+    class prompt(Cmd):
+
+        def __init__(self):
+            self.htaccess = htaccessFile('/home/mark/projects/test_php/.htaccess')
+            Cmd.__init__(self)
+
+        def do_rewrite(self,line):
+            print self.htaccess.RewriteEngine()
+
+        def default(self,line):
+            cmds = line.split()
+            print cmds
+            try:
+                getattr(self.htaccess,cmds[0])(cmds[1:])
+            except TypeError:
+                print 'not callable'
+                print getattr(self.htaccess,cmds[0])
+            except AttributeError:
+                print 'no such attribute'
+
+
+    prompt().cmdloop()
