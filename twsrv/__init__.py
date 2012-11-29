@@ -62,7 +62,7 @@ def setup(configuration):
     log.startLogging(sys.stdout)
     ssl_creator = SSLFactory()
     ssl_creator.setCerts(configuration)
-    debug = configuration.get('debug',False)
+    rload = configuration.get('reloader',False)
     host_def = configuration.get('hosts',{})
     for host in host_def:
         server_name = host
@@ -113,7 +113,7 @@ def setup(configuration):
 
     reactor.listenTCP(configuration.get('http_port',80),http_site)
     reactor.listenSSL(configuration.get('ssl_port',443),http_site,ssl_creator)
-    if debug:
+    if rload:
         reactor.run(installSignalHandlers=0)
     else:
         reactor.run()

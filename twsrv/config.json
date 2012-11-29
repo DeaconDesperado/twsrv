@@ -1,7 +1,7 @@
 {
 	"http_port":5050,
 	"ssl_port":5000,
-	"debug":true,
+	"reloader":true,
 		"hosts":{
 			"myopia.local":{
 					"type":"wsgi",
