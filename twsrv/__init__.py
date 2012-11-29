@@ -16,6 +16,7 @@ import threading
 from shared_root import SharedRootWSGI
 from wphp import PHPApp
 from apache_conf_parser import ApacheConfParser
+from reloader import reloader
 
 root = vhost.NameVirtualHost()
 
@@ -61,6 +62,7 @@ def setup(configuration):
     log.startLogging(sys.stdout)
     ssl_creator = SSLFactory()
     ssl_creator.setCerts(configuration)
+    debug = configuration.get('debug',False)
     host_def = configuration.get('hosts',{})
     for host in host_def:
         server_name = host
@@ -111,5 +113,8 @@ def setup(configuration):
 
     reactor.listenTCP(configuration.get('http_port',80),http_site)
     reactor.listenSSL(configuration.get('ssl_port',443),http_site,ssl_creator)
-    reactor.run()
+    if debug:
+        reactor.run(installSignalHandlers=0)
+    else:
+        reactor.run()
 
