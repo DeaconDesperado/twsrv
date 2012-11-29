@@ -26,7 +26,8 @@
 			"pxquilt.local":{
 				"type":"php",
 				"path":"/home/mark/projects/test_php",
-				"aliases":["www"]
+				"aliases":["www"],
+				"htaccess":"/home/mark/projects/test_php/.htaccess"
 			}
 		}
 }

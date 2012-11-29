@@ -1,1 +1,1 @@
-python ./twsrv/service.py ./twsrv/config.json
+python ./twsrv ./twsrv/config.json
