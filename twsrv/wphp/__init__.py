@@ -14,6 +14,7 @@ from paste import fileapp
 from paste.request import construct_url
 from paste.httpexceptions import HTTPMovedPermanently, HTTPNotFound
 from wphp import fcgi_app
+from apache_conf_parser import ApacheConfParser
 
 here = os.path.dirname(__file__)
 default_php_ini = os.path.join(here, 'default-php.ini')
@@ -82,6 +83,9 @@ class PHPApp(object):
         self.lock = threading.Lock()
         self.child_pid = None
         self.fcgi_app = None
+        if os.path.exists(os.path.join(self.base_dir,'.htaccess')):
+            self.htaccess = ApacheConfParser(os.path.join(self.base_dir,'.htaccess'))
+            self.logger.debug('htaccess loaded %s',self.htaccess)
 
     # These are the filenames of "index" files:
     index_names = ['index.html', 'index.htm', 'index.php']
@@ -100,7 +104,9 @@ class PHPApp(object):
                     "wphp doesn't support multiprocess apps very well yet")
             self.create_child()
         path_info = environ.get('PATH_INFO', '').lstrip('/')
+        self.logger.debug('path_info %s', path_info)
         full_path = os.path.join(self.base_dir, path_info)
+        self.logger.debug('full_path %s', full_path)
         if (os.path.isdir(full_path)
             and not environ.get('PATH_INFO', '').endswith('/')):
             # We need to do a redirect
@@ -108,6 +114,7 @@ class PHPApp(object):
             redir = HTTPMovedPermanently(headers=[('location', new_url)])
             return redir.wsgi_application(environ, start_response)
         script_filename, path_info = self.find_script(self.base_dir, path_info)
+        self.logger.debug('script_filename: %s, path_info %s', script_filename,path_info)
         if script_filename is None:
             exc = HTTPNotFound()
             return exc(environ, start_response)
@@ -138,7 +145,7 @@ class PHPApp(object):
         Given a path, finds the file the path points to, and the extra
         portion of the path (PATH_INFO).
         """
-        
+        #do .htaccess adjustments here
         full_path = os.path.join(base, path)
         if os.path.exists(full_path) and os.path.isdir(full_path):
             for index_name in self.index_names:
