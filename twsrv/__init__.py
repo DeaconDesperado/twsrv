@@ -17,6 +17,7 @@ from shared_root import SharedRootWSGI
 from wphp import PHPApp
 from apache_conf_parser import ApacheConfParser
 from reloader import reloader
+import logging
 
 root = vhost.NameVirtualHost()
 
@@ -60,6 +61,8 @@ class DomainRedirector(Redirect):
 
 def setup(configuration):
     log.startLogging(sys.stdout)
+    sublog = logging.getLogger('twisted')
+    sublog.addHandler(logging.StreamHandler())
     ssl_creator = SSLFactory()
     ssl_creator.setCerts(configuration)
     rload = configuration.get('reloader',False)
@@ -88,7 +91,7 @@ def setup(configuration):
             host_resource = File(str(path))
         elif host_def[host].get('type','wsgi')=='php':
             log.msg('path: %s' % path)
-            app = PHPApp(str(path),php_options=host_def[host].get('opts',{}))
+            app = PHPApp(str(path),php_options=host_def[host].get('opts',{}),logger='twisted',log_level=logging.DEBUG)
             host_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
 
         static_paths = host_def[host].get('static_paths',{})
