@@ -498,6 +498,13 @@ class htaccessFile(ApacheConfParser):
                 continue
         return engine,base
 
+    def maketests(self):
+        nodes = [node for node in self.nodes]
+        nodes.reverse()
+        while len(nodes)>0:
+            print nodes.pop()
+
+
     def shouldRewrite(self,path):
         if self.RewriteEngine()[0]:
             for node in self.nodes:
@@ -514,6 +521,9 @@ if __name__ == '__main__':
 
         def do_rewrite(self,line):
             print self.htaccess.RewriteEngine()
+
+        def do_tests(self,line):
+            self.htaccess.maketests()
 
         def default(self,line):
             cmds = line.split()
