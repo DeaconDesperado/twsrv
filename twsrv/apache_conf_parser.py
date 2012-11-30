@@ -484,57 +484,63 @@ class ApacheConfParser(ComplexNode):
         self.complete = True
                
 
+class RewriteRule():
+    
+    conditions = []
+
+    def __init__(self,rule_node):
+        self.conditions = []
+        self.rule = rule
+
+    def run_test(self):
+        pass
+
+    def add_cond(self,condition):
+        self.conditions.append(condition)
+
+    def __repr__(self):
+        return '<RewriteRule>%s</RewriteRule>' % self.conditions
+
 class htaccessFile(ApacheConfParser):
 
-    def RewriteEngine(self):
+    def __init__(self, source, infile=True, delay=False, count=None):
+        super(htaccessFile,self).__init__(source,infile,delay,count)
+        self._determine_rewrite()
+        self._maketests()
+
+    def _determine_rewrite(self):
         engine,base = None,None
         for node in self.nodes:
             try:
                 if node.name == 'RewriteEngine' and 'On' in node.arguments:
-                    engine = True
+                    self.RewriteEngine = True
                 if node.name == 'RewriteBase':
-                    base = node.arguments[0]
+                    self.RewriteBase = node.arguments[0]
             except AttributeError:
                 continue
-        return engine,base
 
-    def maketests(self):
-        nodes = [node for node in self.nodes]
-        nodes.reverse()
+    def _maketests(self):
+        nodes = col_mod.deque([node for node in self.nodes])
+        cond_stack = col_mod.deque()
+        self.RewriteRules = []
         while len(nodes)>0:
-            print nodes.pop()
+            try:
+                node = nodes.popleft()
+                if node.name == 'RewriteRule':
+                    rule = RewriteRule(node)
+                    for cond in cond_stack:
+                        rule.add_cond(cond)
+                    cond_stack.clear()
+                    self.RewriteRules.append(rule)
+                elif node.name == 'RewriteCond':
+                    cond_stack.append(node)
+            except AttributeError:
+                continue
+
+        for rule in self.RewriteRules:
+            print rule
 
 
-    def shouldRewrite(self,path):
-        if self.RewriteEngine()[0]:
-            for node in self.nodes:
-                pass
-        return False
 
 if __name__ == '__main__':
-    from cmd import Cmd
-    class prompt(Cmd):
-
-        def __init__(self):
-            self.htaccess = htaccessFile('/home/mark/projects/test_php/.htaccess')
-            Cmd.__init__(self)
-
-        def do_rewrite(self,line):
-            print self.htaccess.RewriteEngine()
-
-        def do_tests(self,line):
-            self.htaccess.maketests()
-
-        def default(self,line):
-            cmds = line.split()
-            print cmds
-            try:
-                getattr(self.htaccess,cmds[0])(cmds[1:])
-            except TypeError:
-                print 'not callable'
-                print getattr(self.htaccess,cmds[0])
-            except AttributeError:
-                print 'no such attribute'
-
-
-    prompt().cmdloop()
+    htaccess = htaccessFile('/home/mark/projects/test_php/.htaccess')
