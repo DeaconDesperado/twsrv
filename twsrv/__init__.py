@@ -81,8 +81,12 @@ def setup(configuration):
         log.msg('Setting up host %s' % server_name)
         if host_def[host].get('type','wsgi') == 'wsgi':
             sys.path.append(str(path))
-            exec("import %s.%s" % (package,module))
-            app = getattr(getattr(locals()[package],module),app)
+            if package and module:
+                exec("import %s.%s" % (package,module))
+                app = getattr(getattr(locals()[package],module),app)
+            elif package:
+                exec("import %s" % package)
+                app = getattr(locals()[package],app)
             wsgi_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
             host_resource = SharedRootWSGI()
             host_resource.setApp(wsgi_resource)
