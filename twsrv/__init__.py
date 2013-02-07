@@ -18,6 +18,7 @@ from wphp import PHPApp
 from apache_conf_parser import ApacheConfParser
 from reloader import reloader
 import logging
+from reverse_proxy import ReverseProxy
 
 root = vhost.NameVirtualHost()
 
@@ -97,6 +98,10 @@ def setup(configuration):
             log.msg('path: %s' % path)
             app = PHPApp(str(path),php_options=host_def[host].get('opts',{}),logger='twisted',log_level=logging.DEBUG)
             host_resource = WSGIResource(reactor,reactor.getThreadPool(),app)
+        elif host_def[host].get('type','wsgi')=='rev_proxy':
+            proxy_host,proxy_port = (str(host_def[host].get('proxy_host',host)),host_def[host].get('port',80))
+            print proxy_host,proxy_port,path
+            host_resource = ReverseProxy(proxy_host,host_def[host].get('port',80),str(path),reactor)
 
         static_paths = host_def[host].get('static_paths',{})
         for s_route,s_path in static_paths.items():
@@ -114,8 +119,6 @@ def setup(configuration):
         
         root.addHost(server_name,host_resource)
    
-    log.msg('setting up static fileserving')
-
     http_site = Site(root)
 
     reactor.listenTCP(configuration.get('http_port',80),http_site)

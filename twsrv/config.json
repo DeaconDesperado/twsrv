@@ -3,29 +3,11 @@
 	"ssl_port":5000,
 	"reloader":true,
 		"hosts":{
-			"patrick.local":{
-					"type":"wsgi",
-					"path":"/home/mark/projects",
-					"package":"patrick",
-					"module":"listener",
-					"app":"app",
-					"aliases":["www"],
-					"static_paths":{
-						"bah":"/home/mark/projects/patrick/public"
-					}
-			},
-			"frcarrick.local":{
-					"type":"wsgi",
-					"path":"/home/mark/projects/frcarrick",
-					"package":"frcarrick",
-					"app":"app",
-					"aliases":["www"]
-			},
-			"pxquilt.local":{
-				"type":"php",
-				"path":"/home/mark/projects/test_php",
-				"aliases":["www"],
-				"htaccess":"/home/mark/projects/test_php/.htaccess"
+			"pickman.local":{
+					"type":"rev_proxy",
+					"path":"",
+					"proxy_host":"soundcloud.com",
+					"port":80
 			}
 		}
 }
