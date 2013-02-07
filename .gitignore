@@ -1,3 +1,4 @@
 *.pyc
 env
 _trial_temp
+dcnsrv.log

@@ -19,6 +19,7 @@ from apache_conf_parser import ApacheConfParser
 from reloader import reloader
 import logging
 from reverse_proxy import ReverseProxy
+from twisted.python.logfile import DailyLogFile
 
 root = vhost.NameVirtualHost()
 
@@ -61,9 +62,7 @@ class DomainRedirector(Redirect):
         return redirectTo('%s%s%s' % (self.url,host_port,request.path),request)
 
 def setup(configuration):
-    log.startLogging(sys.stdout)
-    sublog = logging.getLogger('twisted')
-    sublog.addHandler(logging.StreamHandler())
+    log.startLogging(DailyLogFile.fromFullPath(configuration.get('log_path','/var/log/dcnsrv.log')))
     ssl_creator = SSLFactory()
     ssl_creator.setCerts(configuration)
     rload = configuration.get('reloader',False)

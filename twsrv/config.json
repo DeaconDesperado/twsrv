@@ -1,6 +1,7 @@
 {
 	"http_port":5050,
 	"ssl_port":5000,
+    "log_path":"./dcnsrv.log",
 	"reloader":true,
 		"hosts":{
 			"pickman.local":{
