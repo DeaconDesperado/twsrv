@@ -82,10 +82,6 @@ class PHPApp(object):
         self.lock = threading.Lock()
         self.child_pid = None
         self.fcgi_app = None
-        if os.path.exists(os.path.join(self.base_dir,'.htaccess')):
-            self.htaccess = ApacheConfParser(os.path.join(self.base_dir,'.htaccess'))
-            self.logger.debug(self.htaccess)
-
 
     # These are the filenames of "index" files:
     index_names = ['index.html', 'index.htm', 'index.php']
