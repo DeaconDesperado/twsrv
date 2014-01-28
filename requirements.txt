@@ -1,34 +1,8 @@
 BeautifulSoup==3.2.1
-DateUtils==0.5.2
 Flask==0.9
 Flask-AutoIndex==0.4.1
 Flask-Classy==0.5.1
 Flask-OAuth==0.12
 Flask-Silk==0.1.2
-Jinja2==2.6
-PIL==1.1.7
-Paste==1.7.5.1
-PyYAML==3.10
 Twisted==12.2.0
-Werkzeug==0.8.3
-apache-conf-parser==1.0.1
-argparse==1.2.1
-## FIXME: could not find svn URL in dependency_links for this package:
-flup==1.0.3.dev-20110405
-httplib2==0.7.6
-minimongo==0.2.8
-nltk==2.0.4
-oauth2==1.5.211
-passlib==1.6.1
-pyOpenSSL==0.13
-pymongo==2.3
-python-dateutil==2.1
-pytz==2012h
-requests==0.14.2
-simplejson==2.6.2
-six==1.2.0
-twython==2.4.0
-## FIXME: could not find svn URL in dependency_links for this package:
-wphp==0.1dev-r8085
-wsgiref==0.1.2
-zope.interface==4.0.1
+Paste

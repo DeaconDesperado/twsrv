@@ -1,0 +1,11 @@
+{
+"http_port":80,
+"ssl_port":443,
+"log_path": "./dcnsrv.log",
+"hosts":{
+    "local.mgtest.dev":{
+        "type":"dir",
+        "path":"/Users/mgthesecond/Documents"
+    }
+  }
+}

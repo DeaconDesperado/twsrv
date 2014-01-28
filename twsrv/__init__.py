@@ -15,12 +15,13 @@ import re
 import threading
 from shared_root import SharedRootWSGI
 from wphp import PHPApp
-from apache_conf_parser import ApacheConfParser
 from reloader import reloader
 import logging
 from reverse_proxy import ReverseProxy
 from twisted.python.logfile import DailyLogFile
 
+
+version = "0.9"
 root = vhost.NameVirtualHost()
 
 class SSLFactory(ContextFactory):
@@ -62,7 +63,7 @@ class DomainRedirector(Redirect):
         return redirectTo('%s%s%s' % (self.url,host_port,request.path),request)
 
 def setup(configuration):
-    log.startLogging(DailyLogFile.fromFullPath(configuration.get('log_path','/var/log/dcnsrv.log')))
+    log.startLogging(DailyLogFile.fromFullPath(configuration.get('log_path','dcnsrv.log')))
     ssl_creator = SSLFactory()
     ssl_creator.setCerts(configuration)
     rload = configuration.get('reloader',False)
@@ -127,3 +128,19 @@ def setup(configuration):
     else:
         reactor.run()
 
+
+def main():
+    import argparse
+    from reloader import reloader
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_json')
+    args = parser.parse_args()
+    try:
+        json_file = open(args.config_json)
+        print json_file
+        config = json.loads(json_file.read())
+        rload = config.get('reloader',False)
+        setup(config)
+    except IOError, e:
+        print e
+        print 'Could not find config file %s' % args.config_json

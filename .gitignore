@@ -2,3 +2,6 @@
 env
 _trial_temp
 dcnsrv.log
+build
+dcnsrv.egg-info
+dist

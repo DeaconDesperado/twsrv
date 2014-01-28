@@ -14,7 +14,6 @@ from paste import fileapp
 from paste.request import construct_url
 from paste.httpexceptions import HTTPMovedPermanently, HTTPNotFound
 from wphp import fcgi_app
-from apache_conf_parser import ApacheConfParser
 
 here = os.path.dirname(__file__)
 default_php_ini = os.path.join(here, 'default-php.ini')
