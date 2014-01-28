@@ -8,7 +8,7 @@ except ImportError:
     from distutils.core import setup
 
 NAME = "dcnsrv"
-VERSION = "0.9"
+VERSION = "1.6"
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
